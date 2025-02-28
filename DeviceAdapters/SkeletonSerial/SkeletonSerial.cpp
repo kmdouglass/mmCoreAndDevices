@@ -72,7 +72,9 @@ MODULE_API void DeleteDevice(MM::Device* pDevice)
 */
 SkeletonSerial::SkeletonSerial() :
 	// Parameter values before hardware synchronization
-	initialized_ (false)
+	initialized_ (false),
+	msg_ (""),
+	response_ ("")
 {
 	// call the base class method to set-up default error codes/messages
 	InitializeDefaultErrorMessages();
@@ -162,6 +164,26 @@ int SkeletonSerial::Shutdown()
 /////////////////////////////////////////////
 // Action handlers
 /////////////////////////////////////////////
+int SkeletonSerial::OnMessageChange(MM::PropertyBase* pProp, MM::ActionType eAct)
+{
+	// Obtain a pointer to the Property that can be modified.
+	MM::Property* pChildProperty = (MM::Property*)pProp;
+
+	if (eAct == MM::BeforeGet)
+	{
+		// Set the value that appear in MM to match the current device state.
+		pProp->Set(msg_.c_str());
+	}
+	else if (eAct == MM::AfterSet)
+	{
+		// Set the device state to match the value that appears in MM.
+		pProp->Get(msg_);
+		response_ = this->QueryDevice(msg_);
+	}
+
+	return DEVICE_OK;
+}
+
 int SkeletonSerial::OnPort(MM::PropertyBase* pProp, MM::ActionType eAct)
 {
 	if (eAct == MM::BeforeGet)
@@ -178,6 +200,25 @@ int SkeletonSerial::OnPort(MM::PropertyBase* pProp, MM::ActionType eAct)
 		}
 
 		pProp->Get(port_);
+	}
+
+	return DEVICE_OK;
+}
+
+int SkeletonSerial::OnResponseChange(MM::PropertyBase* pProp, MM::ActionType eAct)
+{
+	// Obtain a pointer to the Property that can be modified.
+	MM::Property* pChildProperty = (MM::Property*)pProp;
+
+	if (eAct == MM::BeforeGet)
+	{
+		// Set the value that appear in MM to match the current device state.
+		pProp->Set(response_.c_str());
+	}
+	else if (eAct == MM::AfterSet)
+	{
+		// Set the device state to match the value that appears in MM.
+		pProp->Get(response_);
 	}
 
 	return DEVICE_OK;
