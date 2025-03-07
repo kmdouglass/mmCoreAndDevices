@@ -96,7 +96,7 @@ void parseMessage(const String& input, Message& msg) {
 void clearSerialBuffer() {
   // Small delay to allow the buffer to fill with any pending characters
   delay(10);
-  
+
   while (Serial.available() > 0) {
     Serial.read();
   }
